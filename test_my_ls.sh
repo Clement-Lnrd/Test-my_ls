@@ -57,19 +57,21 @@ fi
 
 # Send ls & my_ls outputs in files in the temporary directory
 
-ls > $dir/ls
-./my_ls > $dir/my_ls
-ls -l > $dir/ls_l
-./my_ls -l > $dir/my_ls_l
-ls -a > $dir/ls_a
-./my_ls -a > $dir/my_ls_a
-ls -la > $dir/ls_la
-./my_ls -la > $dir/my_ls_la
+ls $HOME > $dir/ls
+./my_ls $HOME > $dir/my_ls
+ls -a $HOME > $dir/ls_a
+./my_ls -a $HOME > $dir/my_ls_a
+ls -r $HOME > $dir/ls_r
+./my_ls -r $HOME > $dir/my_ls_r
+ls -ar $HOME > $dir/ls_ar
+./my_ls -ar $HOME > $dir/my_ls_ar
 
 # Compare outputs
 
 diff $dir/ls $dir/my_ls > $dir/diff
 diff $dir/ls_a $dir/my_ls_a > $dir/diff_a
+diff $dir/ls_r $dir/my_ls_r > $dir/diff_r
+diff $dir/ls_ar $dir/my_ls_ar > $dir/diff_ar
 echo -e "\e[36m\033[1m//Test #1\033[0m\033[36m\nls [without OPTION/FILE]"
 if [ -s $dir/diff ]; then
     echo -e "Outputs are differents:\033[0m"
@@ -82,6 +84,22 @@ echo -e "\e[36m\033[1m//Test #2\033[0m\033[36m\nls -a"
 if [ -s $dir/diff_a ]; then
     echo -e "Outputs are differents:\033[0m"
     cat $dir/diff_a
+else
+    echo -e "\e[36mAll is good\033[0m"
+fi
+echo ""
+echo -e "\e[36m\033[1m//Test #3\033[0m\033[36m\nls -r"
+if [ -s $dir/diff_r ]; then
+    echo -e "Outputs are differents:\033[0m"
+    cat $dir/diff_r
+else
+    echo -e "\e[36mAll is good\033[0m"
+fi
+echo ""
+echo -e "\e[36m\033[1m//Test #4\033[0m\033[36m\nls -ra"
+if [ -s $dir/diff_ar ]; then
+    echo -e "Outputs are differents:\033[0m"
+    cat $dir/diff_ar
 else
     echo -e "\e[36mAll is good\033[0m"
 fi
