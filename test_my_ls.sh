@@ -1,6 +1,10 @@
 #!/bin/bash -e
 
-me=$(basename "${0}")
+ME=$(basename "${0}")
+declare -A ERRORS=(
+    [INVALID_OPTION]="Invalid option was provided."
+    [MISSING_BINARY]="Put ${ME} in the same folder than my_ls project before running."
+)
 
 function header {
     echo -e "\e[31m\033[1m
@@ -31,10 +35,7 @@ function write_error {
 
 function menu {
     PS3="Select an option (1-2) : "
-    local options=(
-        "Continue anyway"
-        "Stop"
-    )
+    local options=( "Continue anyway" "Stop" )
     
     select option in "${options[@]}"; do
         case "${REPLY}" in
@@ -56,21 +57,13 @@ function make_test {
     local test_id="${3}"
     local ls_code=$(ls -C $flags $path | tr -s "\t" " ")
     local my_ls_code=$(./my_ls $flags $path)
-    local diff_stmt=$(diff <(printf '%s\n' "${ls_code}") <(printf '%s\n' "${my_ls_code}"))
+    local diff_stmt=$(diff <(echo "${ls_code}") <(echo "${my_ls_code}"))
     local diff_code=$(echo "${?}")
 
     echo -e "\e[36m\033[1m//Test #${test_id}\033[0m\033[36m\nls [flags: \"${flags}\" | path: \"${path}\"]"
-    if [[ "${diff_code}" = "0" ]]; then
-        echo -e "\e[36mAll is good\033[0m"
-    fi
-    if [[ "${diff_code}" = "1" ]]; then
-        echo -e "Outputs are differents:\033[0m"
-        echo "${diff_stmt}"
-    fi
-    if [[ "${diff_code}" = "2" ]]; then
-        echo -e "[ERROR] Something went wrong with diff command.\033[0m"
-        exit 84
-    fi
+    [[ "${diff_code}" = "0" ]] && echo -e "\e[36mAll is good\033[0m"
+    [[ "${diff_code}" = "1" ]] && echo -e "Outputs are differents:\033[0m" && echo "${diff_stmt}"
+    [[ "${diff_code}" = "2" ]] && echo -e "[ERROR] Something went wrong with diff command.\033[0m" && exit 84
 }
 
 function generate_logs {
@@ -78,10 +71,7 @@ function generate_logs {
     local path=("${HOME}" "${HOME}" "${HOME}")
     local range="${#flags[@]}"
 
-    for (( i=0; i<"${range}"; i++)); do
-        echo $(make_test "${flags[${i}]}" "${path[${i}]}" $(( i + 1 )))
-        echo ""
-    done
+    for (( i=0; i<"${range}"; i++)); do echo $(make_test "${flags[${i}]}" "${path[${i}]}" $(( i + 1 ))); done
 }
 
 function main {
@@ -90,22 +80,14 @@ function main {
 
     echo "${ascii_header}"
     if [[ ! $(id -u) = "0" ]]; then
-        echo -e "Please relaunch script as sudo, you may run into permissions issues\n"
+        echo -e "Please start the script with sudo, else you may face permissions issues\n"
         option=$(menu)
-        if [[ "${option}" = "0" ]]; then
-            write_error "error: invalid option ${REPLY}" 84
-            exit 84
-        fi
-        if [[ "${option}" = "2" ]]; then
-            echo "Good bye !"
-            exit 0
-        fi
+        [[ "${option}" = "0" ]] && write_error "${ERRORS[INVALID_OPTION]}" 84
+        [[ "${option}" = "2" ]] && echo "Good bye !" && exit 0
     fi
     echo "[+] Compiling the my_ls binary."
     make all > /dev/null
-    if [[ ! -f "./my_ls" ]]; then
-        write_error "Please, move or copy your ${binary} in the same place than ${me}." 84
-    fi
+    [[ ! -f "./my_ls" ]] && write_error "${ERRORS[MISSING_BINARY]}" 84
     echo "[+] Done"
     echo "[+] Running tests ..."
     generate_logs
