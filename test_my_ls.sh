@@ -59,21 +59,37 @@ function make_test {
     local test_id="${3}"
     local ls_code=$(ls -C $flags $path | tr -s "\t" " ")
     local my_ls_code=$(./my_ls $flags $path)
-    local diff_stmt=$(diff <(echo "${ls_code}") <(echo "${my_ls_code}"))
-    local diff_code=$(echo "${?}")
 
+    echo "${ls_code}" > /tmp/ls_code.tmp
+    echo "${my_ls_code}" > /tmp/my_ls_code.tmp
+    local diff_code=$(diff /tmp/ls_code.tmp /tmp/my_ls_code.tmp > /tmp/ls_diff.tmp && echo "0" || echo "1")
     echo -e "\e[36m\033[1m//Test #${test_id}\033[0m\033[36m\nls [flags: \"${flags}\" | path: \"${path}\"]"
-    [[ "${diff_code}" = "0" ]] && echo -e "\e[36mAll is good\033[0m"
-    [[ "${diff_code}" = "1" ]] && echo -e "Outputs are differents:\033[0m" && echo "${diff_stmt}"
-    [[ "${diff_code}" = "2" ]] && echo -e "[ERROR] Something went wrong with diff command.\033[0m" && exit 84
+    if [[ "${diff_code}" = "0" ]]; then
+        echo -e "\e[36mAll is good\033[0m"
+    fi
+    if [[ "${diff_code}" = "1" ]]; then
+        echo -e "Outputs are differents:\033[0m"
+        cat /tmp/ls_diff.tmp
+    fi
 }
 
 function generate_logs {
+<<<<<<< HEAD
     local flags=( "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" )
     local path=("./" "./" "./" "./" "./" "./" "./" "./" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/")
     local range="${#flags[@]}"
+=======
+    local flags=( "-a" "-r" "-ar" "-R")
+    local path=( "${HOME}" "/home/${USERNAME}" )
+    local flags_range="${#flags[@]}"
+    local path_range="${#path[@]}"
+>>>>>>> 736e455 (Improving flags and path functionnality, avoiding code repetition, fixing the diff statement)
 
-    for (( i=0; i<"${range}"; i++)); do echo $(make_test "${flags[${i}]}" "${path[${i}]}" $(( i + 1 ))); done
+    for (( i=0; i<"${flags_range}"; i++)); do
+        for (( j=0; j<"${path_range}"; j++)); do
+            make_test "${flags[${i}]}" "${path[${j}]}" $(( i + 1 + j ))
+        done
+    done
 }
 
 function main {
