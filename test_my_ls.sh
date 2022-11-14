@@ -60,17 +60,18 @@ function make_test {
     local ls_code=$(ls -C $flags $path | tr -s "\t" " ")
     local my_ls_code=$(./my_ls $flags $path)
 
-    echo "${ls_code}" > /tmp/ls_code.tmp
-    echo "${my_ls_code}" > /tmp/my_ls_code.tmp
-    local diff_code=$(diff /tmp/ls_code.tmp /tmp/my_ls_code.tmp > /tmp/ls_diff.tmp && echo "0" || echo "1")
+    echo "${ls_code}" > /tmp/testmyls_lscode.tmp
+    echo "${my_ls_code}" > /tmp/testmyls_mylscode.tmp
+    local diff_code=$(diff /tmp/testmyls_mylscode.tmp /tmp/testmyls_lscode.tmp > /tmp/testmyls_diff.tmp && echo "0" || echo "1")
     echo -e "\e[36m\033[1m//Test #${test_id}\033[0m\033[36m\nls [flags: \"${flags}\" | path: \"${path}\"]"
     if [[ "${diff_code}" = "0" ]]; then
         echo -e "\e[36mAll is good\033[0m"
     fi
     if [[ "${diff_code}" = "1" ]]; then
         echo -e "Outputs are differents:\033[0m"
-        cat /tmp/ls_diff.tmp
+        cat /tmp/testmyls_diff.tmp
     fi
+    rm -rf /tmp/testmyls_*.tmp
 }
 
 function generate_logs {
