@@ -2,7 +2,7 @@
 Bash script for testing my_ls program
 
 ## Launch script
-Move the script file in your **my_ls** directory, then run `chmod 777 test_my_ls.sh` and finally `./test_my_ls.sh` (run as sudo if you have permission problems)
+Move the script file in your **my_ls** directory, then run `chmod +x test_my_ls.sh` and finally `./test_my_ls.sh` (run as sudo if you're facing permissions issues)
 
 ## Actual tests
 ##### `ls [without OPTION/FILE]`

@@ -1,113 +1,98 @@
-#!/bin/bash
+#!/bin/bash -e
 
-# Variables and functions definition
+ME=$(basename "${0}")
+declare -A ERRORS=(
+    [INVALID_OPTION]="Invalid option was provided."
+    [MISSING_BINARY]="Put ${ME} in the same folder than my_ls project before running."
+)
 
-dir=$HOME/.tmp_tests_my_ls
-me=`basename "$0"`
-PS3='Select an option (1-3): '
-options=("Continue, I already running as sudo" "Stop" "Continue anyway (/!\\ WARNING: test risk return everything is good, but that may not be the case /!\\)")
+function header {
+    echo -e "\e[31m\033[1m
+    ###################################################################################################
+    #                                  .__                 __                   __                    #
+    #                 _____ ___.__.    |  |   ______     _/  |_  ____   _______/  |_                  #
+    #                /     <   |  |    |  |  /  ___/     \   __\/ __ \ /  ___/\   __\\                 #
+    #               |  Y Y  \___  |    |  |__\___ \       |  | \  ___/ \___ \  |  |                   #
+    #               |__|_|  / ____|____|____/____  >      |__|  \___  >____  > |__|                   #
+    #                     \/\/   /_____/         \/                 \/     \/                         #
+    #     ___.               _________ .__                                __        .____             #
+    #     \_ |__ ___.__.     \_   ___ \|  |   ____   _____   ____   _____/  |_      |    |            #
+    #      | __ <   |  |     /    \  \/|  | _/ __ \ /     \_/ __ \ /    \   __\     |    |            #
+    #      | \_\ \___  |     \     \___|  |_\  ___/|  Y Y  \  ___/|   |  \  |       |    |___         #
+    #      |___  / ____|      \______  /____/\___  >__|_|  /\___  >___|  /__|       |_______ \ /\\     #
+    #          \/\/                  \/          \/      \/     \/     \/                   \/ \/     #
+    #                                                                                                 #
+    ###################################################################################################\033[0m\n"
+}
 
-# Header
+function write_error {
+    local error="${1}"
+    local error_code="${2}"
 
-echo -e "\e[31m\033[1m
-###################################################################################################
-#                                  .__                 __                   __                    #
-#                 _____ ___.__.    |  |   ______     _/  |_  ____   _______/  |_                  #
-#                /     <   |  |    |  |  /  ___/     \   __\/ __ \ /  ___/\   __\\                 #
-#               |  Y Y  \___  |    |  |__\___ \       |  | \  ___/ \___ \  |  |                   #
-#               |__|_|  / ____|____|____/____  >      |__|  \___  >____  > |__|                   #
-#                     \/\/   /_____/         \/                 \/     \/                         #
-#     ___.               _________ .__                                __        .____             #
-#     \_ |__ ___.__.     \_   ___ \|  |   ____   _____   ____   _____/  |_      |    |            #
-#      | __ <   |  |     /    \  \/|  | _/ __ \ /     \_/ __ \ /    \   __\     |    |            #
-#      | \_\ \___  |     \     \___|  |_\  ___/|  Y Y  \  ___/|   |  \  |       |    |___         #
-#      |___  / ____|      \______  /____/\___  >__|_|  /\___  >___|  /__|       |_______ \ /\\     #
-#          \/\/                  \/          \/      \/     \/     \/                   \/ \/     #
-#                                                                                                 #
-###################################################################################################\033[0m\n"
-echo -e "Please relaunch script as ('./$me') if you are not already, you risk permissions issues\n"
-select fav in "${options[@]}"; do
-    case $fav in
-        "Continue, I already running as sudo")
-            break
-            ;;
-        "Stop")
-            exit 0
-            ;;
-        "Continue anyway (/!\\ WARNING: test risk return everything is good, but that may not be the case /!\\)")
-            break
-	    break
-	    exit
-	    ;;
-        *) echo "invalid option $REPLY";;
-    esac
-done
-echo ""
+    echo -e "\e[31m\033[1m[ERROR] ${error}\033[0m\n"
+    exit "${error_code}"
+}
 
-# Recompile with Makefile
+function menu {
+    PS3="Select an option (1-2) : "
+    local options=( "Continue anyway" "Stop" )
+    
+    select option in "${options[@]}"; do
+        case "${REPLY}" in
+            "1" | "2")
+                echo "${REPLY}"
+                break
+                ;;
+            *)
+                echo "0"
+                break
+                ;;
+        esac
+    done
+}
 
-make re > /dev/null
+function make_test {
+    local flags="${1}"
+    local path="${2}"
+    local test_id="${3}"
+    local ls_code=$(ls -C $flags $path | tr -s "\t" " ")
+    local my_ls_code=$(./my_ls $flags $path)
+    local diff_stmt=$(diff <(echo "${ls_code}") <(echo "${my_ls_code}"))
+    local diff_code=$(echo "${?}")
 
-# Create temporary directory and files for tests
+    echo -e "\e[36m\033[1m//Test #${test_id}\033[0m\033[36m\nls [flags: \"${flags}\" | path: \"${path}\"]"
+    [[ "${diff_code}" = "0" ]] && echo -e "\e[36mAll is good\033[0m"
+    [[ "${diff_code}" = "1" ]] && echo -e "Outputs are differents:\033[0m" && echo "${diff_stmt}"
+    [[ "${diff_code}" = "2" ]] && echo -e "[ERROR] Something went wrong with diff command.\033[0m" && exit 84
+}
 
-if ! mkdir $dir; then
-    echo -e "\e[31m\033[1m[ERROR] Failed to create temporary directory, already exist or permission issue\n        Please delete it, rename in script or relaunch as sudo\033[0m\n"
-    exit 84
-fi
+function generate_logs {
+    local flags=( "-a" "-r" "-ar" )
+    local path=("${HOME}" "${HOME}" "${HOME}")
+    local range="${#flags[@]}"
 
-# Send ls & my_ls outputs in files in the temporary directory
+    for (( i=0; i<"${range}"; i++)); do echo $(make_test "${flags[${i}]}" "${path[${i}]}" $(( i + 1 ))); done
+}
 
-ls $HOME > $dir/ls
-./my_ls $HOME > $dir/my_ls
-ls -a $HOME > $dir/ls_a
-./my_ls -a $HOME > $dir/my_ls_a
-ls -r $HOME > $dir/ls_r
-./my_ls -r $HOME > $dir/my_ls_r
-ls -ar $HOME > $dir/ls_ar
-./my_ls -ar $HOME > $dir/my_ls_ar
+function main {
+    local ascii_header=$(header)
+    local option=""
 
-# Compare outputs
+    echo "${ascii_header}"
+    if [[ ! $(id -u) = "0" ]]; then
+        echo -e "Please start the script with sudo, else you may face permissions issues\n"
+        option=$(menu)
+        [[ "${option}" = "0" ]] && write_error "${ERRORS[INVALID_OPTION]}" 84
+        [[ "${option}" = "2" ]] && echo "Good bye !" && exit 0
+    fi
+    echo "[+] Compiling the my_ls binary."
+    make all > /dev/null
+    [[ ! -f "./my_ls" ]] && write_error "${ERRORS[MISSING_BINARY]}" 84
+    echo "[+] Done"
+    echo "[+] Running tests ..."
+    generate_logs
+    echo "[+] Done !"
+    exit 0
+}
 
-diff $dir/ls $dir/my_ls > $dir/diff
-diff $dir/ls_a $dir/my_ls_a > $dir/diff_a
-diff $dir/ls_r $dir/my_ls_r > $dir/diff_r
-diff $dir/ls_ar $dir/my_ls_ar > $dir/diff_ar
-echo -e "\e[36m\033[1m//Test #1\033[0m\033[36m\nls [without OPTION/FILE]"
-if [ -s $dir/diff ]; then
-    echo -e "Outputs are differents:\033[0m"
-    cat $dir/diff
-else
-    echo -e "\e[36mAll is good\033[0m"
-fi
-echo ""
-echo -e "\e[36m\033[1m//Test #2\033[0m\033[36m\nls -a"
-if [ -s $dir/diff_a ]; then
-    echo -e "Outputs are differents:\033[0m"
-    cat $dir/diff_a
-else
-    echo -e "\e[36mAll is good\033[0m"
-fi
-echo ""
-echo -e "\e[36m\033[1m//Test #3\033[0m\033[36m\nls -r"
-if [ -s $dir/diff_r ]; then
-    echo -e "Outputs are differents:\033[0m"
-    cat $dir/diff_r
-else
-    echo -e "\e[36mAll is good\033[0m"
-fi
-echo ""
-echo -e "\e[36m\033[1m//Test #4\033[0m\033[36m\nls -ra"
-if [ -s $dir/diff_ar ]; then
-    echo -e "Outputs are differents:\033[0m"
-    cat $dir/diff_ar
-else
-    echo -e "\e[36mAll is good\033[0m"
-fi
-
-# Delete temporary files & directory
-
-if ! rm -r $dir; then
-    echo -e "\e[31m\033[1m[ERROR] Failed to delete temporary directory\n        Please delete it yourself\033[0m\n"
-fi
-
-exit 0
+main
