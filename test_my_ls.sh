@@ -75,22 +75,10 @@ function make_test {
 }
 
 function generate_logs {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-    local flags=( "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" )
-    local path=("./" "./" "./" "./" "./" "./" "./" "./" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/")
-    local range="${#flags[@]}"
-=======
->>>>>>> Clement-Lnrd-main
     local flags=( "-a" "-r" "-ar" "-R")
     local path=( "${HOME}" "/home/${USERNAME}" )
     local flags_range="${#flags[@]}"
     local path_range="${#path[@]}"
-<<<<<<< HEAD
-=======
->>>>>>> 736e455 (Improving flags and path functionnality, avoiding code repetition, fixing the diff statement)
->>>>>>> Clement-Lnrd-main
 
     for (( i=0; i<"${flags_range}"; i++)); do
         for (( j=0; j<"${path_range}"; j++)); do
