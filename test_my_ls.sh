@@ -93,7 +93,7 @@ function main {
         echo -e "Please relaunch script as sudo, you may run into permissions issues\n"
         option=$(menu)
         if [[ "${option}" = "0" ]]; then
-            echo "error: invalid option ${REPLY}"
+            write_error "error: invalid option ${REPLY}" 84
             exit 84
         fi
         if [[ "${option}" = "2" ]]; then
