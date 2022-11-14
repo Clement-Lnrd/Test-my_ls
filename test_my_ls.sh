@@ -22,6 +22,8 @@ function header {
     #      |___  / ____|      \______  /____/\___  >__|_|  /\___  >___|  /__|       |_______ \ /\\     #
     #          \/\/                  \/          \/      \/     \/     \/                   \/ \/     #
     #                                                                                                 #
+    #                                Thanks to Ximaz for Contributing                                 #
+    #                                                                                                 #
     ###################################################################################################\033[0m\n"
 }
 
@@ -36,7 +38,7 @@ function write_error {
 function menu {
     PS3="Select an option (1-2) : "
     local options=( "Continue anyway" "Stop" )
-    
+
     select option in "${options[@]}"; do
         case "${REPLY}" in
             "1" | "2")
@@ -67,8 +69,8 @@ function make_test {
 }
 
 function generate_logs {
-    local flags=( "-a" "-r" "-ar" )
-    local path=("${HOME}" "${HOME}" "${HOME}")
+    local flags=( "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" )
+    local path=("./" "./" "./" "./" "./" "./" "./" "./" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/")
     local range="${#flags[@]}"
 
     for (( i=0; i<"${range}"; i++)); do echo $(make_test "${flags[${i}]}" "${path[${i}]}" $(( i + 1 ))); done
