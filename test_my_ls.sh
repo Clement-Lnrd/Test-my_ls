@@ -22,6 +22,8 @@ function header {
     #      |___  / ____|      \______  /____/\___  >__|_|  /\___  >___|  /__|       |_______ \ /\\     #
     #          \/\/                  \/          \/      \/     \/     \/                   \/ \/     #
     #                                                                                                 #
+    #                                Thanks to Ximaz for Contributing                                 #
+    #                                                                                                 #
     ###################################################################################################\033[0m\n"
 }
 
@@ -36,7 +38,7 @@ function write_error {
 function menu {
     PS3="Select an option (1-2) : "
     local options=( "Continue anyway" "Stop" )
-    
+
     select option in "${options[@]}"; do
         case "${REPLY}" in
             "1" | "2")
@@ -73,10 +75,22 @@ function make_test {
 }
 
 function generate_logs {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    local flags=( "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" "-a" "-r" "-t" "-d" "-ar" "-R" "-l" "-alRdrt" )
+    local path=("./" "./" "./" "./" "./" "./" "./" "./" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/" "/home/${USERNAME}/")
+    local range="${#flags[@]}"
+=======
+>>>>>>> Clement-Lnrd-main
     local flags=( "-a" "-r" "-ar" "-R")
     local path=( "${HOME}" "/home/${USERNAME}" )
     local flags_range="${#flags[@]}"
     local path_range="${#path[@]}"
+<<<<<<< HEAD
+=======
+>>>>>>> 736e455 (Improving flags and path functionnality, avoiding code repetition, fixing the diff statement)
+>>>>>>> Clement-Lnrd-main
 
     for (( i=0; i<"${flags_range}"; i++)); do
         for (( j=0; j<"${path_range}"; j++)); do
